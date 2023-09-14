@@ -11,26 +11,27 @@ app.get("/", (req, res) => {
   res.sendFile(join(__dirname, "index.html"));
 });
 
-let roomNo = 1;
-let full = 0;
+let users = 0;
 
 io.on("connection", (socket) => {
   console.log("a user connected");
+  users++;
+  socket.emit("newUserConnect", { message: "Hey! there. Welcome here" });
 
-  socket.join("room-" + roomNo);
+  socket.broadcast.emit("newUserConnect", {
+    message: `${users} Users Connected`,
+  });
 
-  io.sockets
-    .in("room-" + roomNo)
-    .emit("connectedRoom", `You are connected to room no. ${roomNo}`);
-
-  full++;
-  if (full >= 2) {
-    full = 0;
-    roomNo++;
-  }
-
+  //broadcasting
+  // io.sockets.emit("broadcast", { message: `${users} users connected` });
   socket.on("disconnect", () => {
     console.log("user disconnected");
+
+    users--;
+    socket.broadcast.emit("newUserConnect", {
+      message: `${users} Users Connected`,
+    });
+    //io.sockets.emit("broadcast", { message: `${users} users connected` });
   });
 });
 
